@@ -1,0 +1,31 @@
+name: 'Build actions release'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fetch-and-tag:
+    name: 'Build actions release'
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - run: yarn workspace automatic-releases install --frozen-lockfile
+      - run: yarn workspace automatic-releases build
+
+      - run: |
+          mv packages/automatic-releases/dist/ ./
+          mv packages/automatic-releases/action.yml ./
+
+      - name: Commit report
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "GitHub Workflow"
+          git commit -am "Automatic build"
+          git push
